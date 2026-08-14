@@ -1,4 +1,4 @@
-pipeline {
+ pipeline {
     agent any
 
     stages {
@@ -14,11 +14,11 @@ pipeline {
         stage('Test') {
             steps {
                 sh '''
-                    python3 -m venv venv
-                    ./venv/bin/pip install --upgrade pip
-                    ./venv/bin/pip install -r app/requirements.txt
-                    ./venv/bin/pip install pytest
-                    ./venv/bin/python -m pytest
+                        rm -rf venv
+                        python3 -m venv venv
+                        venv/bin/python -m pip install --upgrade pip
+                        venv/bin/python -m pip install -r app/requirements.txt
+                        venv/bin/python -m pytest
                 '''
             }
         }
