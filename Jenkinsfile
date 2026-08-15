@@ -24,24 +24,26 @@
             }
         }
 
-        stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv('SonarQube') {
-                    withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
-                        def scannerHome = tool 'SonarQubeScanner'
+stage('SonarQube Analysis') {
+    steps {
+        withSonarQubeEnv('SonarQube') {
+            withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
+                script {
+                    def scannerHome = tool 'SonarQubeScanner'
 
-                        sh """
-                            ${scannerHome}/bin/sonar-scanner \
-                              -Dsonar.projectKey=ci-cd-devsecops-pipeline \
-                              -Dsonar.sources=app \
-                              -Dsonar.tests=tests \
-                              -Dsonar.host.url=${SONAR_HOST_URL} \
-                              -Dsonar.token=${SONAR_TOKEN}
-                        """
-                    }
+                    sh """
+                        ${scannerHome}/bin/sonar-scanner \
+                          -Dsonar.projectKey=ci-cd-devsecops-pipeline \
+                          -Dsonar.sources=app \
+                          -Dsonar.tests=tests \
+                          -Dsonar.host.url=${SONAR_HOST_URL} \
+                          -Dsonar.token=${SONAR_TOKEN}
+                    """
                 }
             }
         }
+    }
+}
         stage('Docker Build') {
             steps {
                 sh '''
