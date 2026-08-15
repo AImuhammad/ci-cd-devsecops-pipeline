@@ -11,18 +11,37 @@
             }
         }
 
+
         stage('Test') {
             steps {
                 sh '''
-                        rm -rf venv
-                        python3 -m venv venv
-                        venv/bin/python -m pip install --upgrade pip
-                        venv/bin/python -m pip install -r app/requirements.txt
-                        venv/bin/python -m pytest
+                    rm -rf venv
+                    python3 -m venv venv
+                    venv/bin/python -m pip install --upgrade pip
+                    venv/bin/python -m pip install -r app/requirements.txt
+                    venv/bin/python -m pytest
                 '''
             }
         }
 
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
+                        def scannerHome = tool 'SonarQubeScanner'
+
+                        sh """
+                            ${scannerHome}/bin/sonar-scanner \
+                              -Dsonar.projectKey=ci-cd-devsecops-pipeline \
+                              -Dsonar.sources=app \
+                              -Dsonar.tests=tests \
+                              -Dsonar.host.url=${SONAR_HOST_URL} \
+                              -Dsonar.token=${SONAR_TOKEN}
+                        """
+                    }
+                }
+            }
+        }
         stage('Docker Build') {
             steps {
                 sh '''
