@@ -52,7 +52,7 @@ pipeline {
         stage('Docker Build') {
             steps {
                 sh '''
-                    docker build -t ci-cd-devsecops-app:4.0 .
+                    docker build -t ci-cd-devsecops-app:5.0 .
                 '''
             }
         }
@@ -63,7 +63,7 @@ pipeline {
                     trivy image \
                         --severity CRITICAL \
                         --exit-code 1 \
-                        ci-cd-devsecops-app:4.0
+                        ci-cd-devsecops-app:5.0
                 '''
             }
         }
@@ -80,11 +80,11 @@ pipeline {
                     sh '''
                         echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
 
-                        docker tag ci-cd-devsecops-app:4.0 \
-                            $DOCKER_USERNAME/ci-cd-devsecops-app:4.0
+                        docker tag ci-cd-devsecops-app:5.0 \
+                            $DOCKER_USERNAME/ci-cd-devsecops-app:5.0
 
                         docker push \
-                            $DOCKER_USERNAME/ci-cd-devsecops-app:4.0
+                            $DOCKER_USERNAME/ci-cd-devsecops-app:5.0
 
                         docker logout
                     '''
