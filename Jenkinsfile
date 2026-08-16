@@ -1,4 +1,4 @@
- pipeline {
+pipeline {
     agent any
 
     stages {
@@ -10,7 +10,6 @@
                     url: 'https://github.com/AImuhammad/ci-cd-devsecops-pipeline.git'
             }
         }
-
 
         stage('Test') {
             steps {
@@ -24,30 +23,47 @@
             }
         }
 
-stage('SonarQube Analysis') {
-    steps {
-        withSonarQubeEnv('SonarQube') {
-            withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
-                script {
-                    def scannerHome = tool 'SonarQubeScanner'
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    withCredentials([
+                        string(
+                            credentialsId: 'sonarqube-token',
+                            variable: 'SONAR_TOKEN'
+                        )
+                    ]) {
+                        script {
+                            def scannerHome = tool 'SonarQubeScanner'
 
-                    sh """
-                        ${scannerHome}/bin/sonar-scanner \
-                          -Dsonar.projectKey=ci-cd-devsecops-pipeline \
-                          -Dsonar.sources=app \
-                          -Dsonar.tests=tests \
-                          -Dsonar.host.url=${SONAR_HOST_URL} \
-                          -Dsonar.token=${SONAR_TOKEN}
-                    """
+                            sh """
+                                ${scannerHome}/bin/sonar-scanner \
+                                  -Dsonar.projectKey=ci-cd-devsecops-pipeline \
+                                  -Dsonar.sources=app \
+                                  -Dsonar.tests=tests \
+                                  -Dsonar.host.url=${SONAR_HOST_URL} \
+                                  -Dsonar.token=${SONAR_TOKEN}
+                            """
+                        }
+                    }
                 }
             }
         }
-    }
-}
+
         stage('Docker Build') {
             steps {
                 sh '''
-                    docker build -t ci-cd-devsecops-app:1.0 .
+                    docker build -t ci-cd-devsecops-app:4.0 .
+                '''
+            }
+        }
+
+        stage('Trivy Security Scan') {
+            steps {
+                sh '''
+                    trivy image \
+                        --severity CRITICAL \
+                        --exit-code 1 \
+                        ci-cd-devsecops-app:4.0
                 '''
             }
         }
@@ -63,8 +79,13 @@ stage('SonarQube Analysis') {
                 ]) {
                     sh '''
                         echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-                        docker tag ci-cd-devsecops-app:1.0 $DOCKER_USERNAME/ci-cd-devsecops-app:1.0
-                        docker push $DOCKER_USERNAME/ci-cd-devsecops-app:1.0
+
+                        docker tag ci-cd-devsecops-app:4.0 \
+                            $DOCKER_USERNAME/ci-cd-devsecops-app:4.0
+
+                        docker push \
+                            $DOCKER_USERNAME/ci-cd-devsecops-app:4.0
+
                         docker logout
                     '''
                 }
