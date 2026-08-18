@@ -15,7 +15,7 @@ pipeline {
             steps {
                 sh '''
                     rm -rf venv
-                    python3.12 -m venv venv
+                    python3 -m venv venv
                     venv/bin/python -m pip install --upgrade pip
                     venv/bin/python -m pip install -r app/requirements.txt
                     venv/bin/python -m pytest
