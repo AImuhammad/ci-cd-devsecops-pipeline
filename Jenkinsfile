@@ -91,5 +91,27 @@ pipeline {
                 }
             }
         }
+
+        stage('Deploy') {
+            steps {
+                sh '''
+                    docker rm -f ci-cd-devsecops-app || true
+
+                    docker run -d \
+                        --name ci-cd-devsecops-app \
+                        -p 5000:5000 \
+                        ci-cd-devsecops-app:5.0
+                '''
+            }
+        }
+
+        stage('Health Check') {
+            steps {
+                sh '''
+                    sleep 5
+                    curl -f http://localhost:5000/health
+                '''
+            }
+        }
     }
 }
