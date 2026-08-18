@@ -43,7 +43,6 @@ stage('SonarQube Analysis') {
                                 -Dsonar.tests=tests \
                                 -Dsonar.host.url="$SONAR_HOST_URL" \
                                 -Dsonar.token="$SONAR_TOKEN"
-                                -Dsonar.python.version=3.12                      
                              '''    
                     }
                 }
