@@ -109,7 +109,7 @@ pipeline {
             steps {
                 sh '''
                     sleep 5
-                    curl -f http://localhost:5000/health
+                    curl -f http://172.17.0.1:5000/health
                 '''
             }
         }
