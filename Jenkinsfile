@@ -5,9 +5,11 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                git branch: 'main',
+                git(
+                    branch: 'main',
                     credentialsId: 'github-token',
                     url: 'https://github.com/AImuhammad/ci-cd-devsecops-pipeline.git'
+                )
             }
         }
 
@@ -109,44 +111,46 @@ pipeline {
             }
         }
 
+        stage('Deploy') {
+            steps {
+                sh '''
+                    docker network inspect devsecops-network >/dev/null 2>&1 || \
+                        docker network create devsecops-network
 
-stage('Deploy') {
-    steps {
-        sh '''
-            docker rm -f ci-cd-devsecops-app || true
+                    docker rm -f ci-cd-devsecops-app || true
 
-            docker run -d \
-                --name ci-cd-devsecops-app \
-                --network devsecops-network \
-                -p 5000:5000 \
-                ci-cd-devsecops-app:5.0
-        '''
+                    docker run -d \
+                        --name ci-cd-devsecops-app \
+                        --network devsecops-network \
+                        -p 5000:5000 \
+                        ci-cd-devsecops-app:5.0
+                '''
+            }
+        }
+
+        stage('Health Check') {
+            steps {
+                sh '''
+                    sleep 5
+
+                    curl -f \
+                        http://ci-cd-devsecops-app:5000/health
+                '''
+            }
+        }
     }
-}
-
-
-stage('Health Check') {
-    steps {
-        sh '''
-            sleep 5
-            curl -f http://172.17.0.1:5000/health
-        '''
-    }
-}
 
     post {
+        always {
+            sh 'docker ps -a'
+        }
+
         success {
-            echo 'CI/CD DevSecOps pipeline completed successfully!'
+            echo 'CI/CD DevSecOps pipeline completed successfully.'
         }
 
         failure {
             echo 'CI/CD DevSecOps pipeline failed.'
-        }
-
-        always {
-            sh '''
-                docker ps -a
-            '''
         }
     }
 }
