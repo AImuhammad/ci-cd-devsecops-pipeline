@@ -122,17 +122,15 @@ pipeline {
             }
         }
 
-        stage('Health Check') {
-            steps {
-                sh '''
-                    sleep 5
 
-                    curl -f \
-                        http://localhost:5000/health
-                '''
-            }
-        }
+stage('Health Check') {
+    steps {
+        sh '''
+            sleep 5
+            curl -f http://172.17.0.1:5000/health
+        '''
     }
+}
 
     post {
         success {
