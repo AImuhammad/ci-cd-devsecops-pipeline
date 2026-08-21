@@ -111,30 +111,29 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy to Kubernetes') {
             steps {
                 sh '''
-                    docker network inspect devsecops-network >/dev/null 2>&1 || \
-                        docker network create devsecops-network
+                    export KUBECONFIG=/var/jenkins_home/jenkins-k8s/config
 
-                    docker rm -f ci-cd-devsecops-app || true
+                    kubectl apply -f k8s/deployment.yaml
+                    kubectl apply -f k8s/service.yaml
 
-                    docker run -d \
-                        --name ci-cd-devsecops-app \
-                        --network devsecops-network \
-                        -p 5000:5000 \
-                        ci-cd-devsecops-app:5.0
+                    kubectl rollout status \
+                        deployment/ci-cd-devsecops-app \
+                        --timeout=120s
                 '''
             }
         }
 
-        stage('Health Check') {
+        stage('Kubernetes Health Check') {
             steps {
                 sh '''
-                    sleep 5
+                    export KUBECONFIG=/var/jenkins_home/jenkins-k8s/config
 
-                    curl -f \
-                        http://ci-cd-devsecops-app:5000/health
+                    kubectl get pods
+                    kubectl get deployment ci-cd-devsecops-app
+                    kubectl get service ci-cd-devsecops-app
                 '''
             }
         }

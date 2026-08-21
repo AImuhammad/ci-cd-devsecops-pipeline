@@ -4,3 +4,6 @@ __pycache__/
 *.pyc
 .env
 cloudflared.deb
+
+# Jenkins Kubernetes credentials
+jenkins-k8s/
