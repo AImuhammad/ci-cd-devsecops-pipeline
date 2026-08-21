@@ -7,3 +7,12 @@ cloudflared.deb
 
 # Jenkins Kubernetes credentials
 jenkins-k8s/
+
+# Local/generated files
+venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+*.deb
+.env
+*.log
